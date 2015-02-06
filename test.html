@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="http://s1.qhimg.com/lib/jquery/183.js"></script>
+    <script src="jQuery.serializ.js"></script>
+    <style>#array td {color: red;}</style>
+</head>
+<body>
+    <!-- make array with different serialize attribute -->
+    <table id="array" serialize="people:[s]" gender="gender:[x]">
+        <tr id="zhang">
+            <!-- make multiple key-value from a single node -->
+            <td s="name:text|fontsize:!font-size">Zhang</td>
+            <!-- object syntax => {age} -->
+            <td s="age:{age}" age="key:text">12</td>
+            <!-- checkbox status is mapped to comma separated value -->
+            <td><input x="gender:text" type="checkbox" data-map="M,F" checked="checked"></td>
+            <td>
+                <select name="" id="select" s="country:val">
+                    <option value="China" selected>China</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Korea">Korea</option>
+                </select>
+            </td>
+        </tr>
+        <tr id='Matz'>
+            <td s="name:text|color:!color">Matz</td>
+            <td s="a.deep.path.to.age:text">11</td>
+            <td><input x="gender:text" type="checkbox" data-map="M,F"></td>
+            <td>
+                <!-- object syntax -->
+                <select name="" id="select" s="country:{c}">
+                    <option value="China">中国</option>
+                    <option c="right:val" value="Japan" selected>日本</option>
+                    <option c="wrong:val" value="Korea">韩国</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <script>
+        console.log($('#select').serializ('s'));
+        console.log($('#Matz').serializ('s'));
+        console.log($('input:nth(0)').serializ('x'));
+        console.log($('#array').serializ());
+        console.log($('#array').serializ('gender'));
+    </script>
+</body>
+</html>
