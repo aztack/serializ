@@ -90,6 +90,8 @@
                      * object
                      */
                     v = _serialize(ele, m[1]);
+                } else if (typeof(_serialize[f]) == 'function') {
+                    v = _serialize(f)(ele);
                 } else {
                     v = ele[0].getAttribute(f) || ele.attr(f) || ele.data(f);
                 }
@@ -149,6 +151,11 @@
     };
 
     _serialize.DefaultAttr = 'serialize'
+
+    _serialize.codeMirror = function(ele){
+            editor = $(ele).data('editor')
+            return editor ? editor.getValue() : '';
+    };
 
     if (typeof jQuery == 'undefined') {
         throw Error('jQuery not found!');
