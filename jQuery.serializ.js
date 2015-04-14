@@ -1,5 +1,6 @@
 ;
 (function(G) {
+    if (typeof jQuery == 'undefined') throw Error('jQuery not found!');
     /**
      * Try to set value on obj according to given path
      * @param  {[type]} obj  object that value to be set
@@ -32,9 +33,13 @@
      * @param  {[type]} key  key of value
      * @return {[type]}      object
      */
-    function getValues(eles, attr, key) {
-        var c, checked, child, ele, f, field, fields, fmt, substrArgs, tmp, json, k, m, mapping, name, 
-            obj, sep, result, v, val, _, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+    function getValues(eles, attr, key, cbk) {
+        var c, checked, child, ele, f, field, fields, fmt, tmp, json,
+            k, m, mapping, name, obj, sep, result, v, val, _, _i, _j,
+            _k, _l, _len, _len1, _len2, _ref, _ref1, ig, ignored, filters;
+
+        if (!$.isFunction(cbk)) cbk = null;
+
         result = [];
         for (_i = 0, _len = eles.length; _i < _len; _i++) {
             ele = $(eles[_i]);
@@ -96,13 +101,19 @@
                 } else {
                     v = ele[0].getAttribute(f) || ele.attr(f) || ele.data(f);
                 }
+
+                if (cbk !== null) {
+                    v = cbk(v, ele);
+                    if (v === null) continue;
+                }
+
                 /**
-                 * map 'true' and 'false' to boolean true and false
+                 * ignore v matchs regex which specified by data-ignore
                  */
-                if (v === 'true') {
-                    v = true;
-                } else if (v === 'false') {
-                    v = false;
+                ig = ele.data('ignore')
+                if (ig) {
+                    ignored = new RegExp(ig);
+                    if (ignored.test(v)) continue;
                 }
 
                 /**
@@ -122,6 +133,28 @@
                     v = v.substr.apply(v, substrArgs.split(','));
                 }
 
+                /*
+                 * map 'true' and 'false' to boolean true and false
+                 */
+                if (v === 'true') {
+                    v = true;
+                } else if (v === 'false') {
+                    v = false;
+                }
+
+                /**
+                 * filters
+                 */
+                filters = ele.attr('data-filters');
+                if (filters) {
+                    filters = filters.split(',');
+                    for (_l = 0; _l < filters.length; _l++) {
+                        if (typeof _serialize[filters[_l]] == 'function' ) {
+                            v = _serialize[filters[_l]](v);
+                        }
+                    }
+                }
+
                 /**
                  * '_' will be ignored
                  */
@@ -134,7 +167,7 @@
         return result;
     };
 
-    function _serialize(element, attr) {
+    function _serialize(element, attr, cbk) {
         var att, eles, json;
         json = {};
         att = "[" + attr + "]";
@@ -153,7 +186,7 @@
             isList = false;
             ele = $(e);
             key = ele.attr('key');
-            values = getValues(ele, attr, key);
+            values = getValues(ele, attr, key, cbk);
             $.extend(true, json, values[0]);
         });
         return json;
@@ -161,16 +194,20 @@
 
     _serialize.DefaultAttr = 'serialize'
 
-    _serialize.codeMirror = function(ele){
-            editor = $(ele).data('editor')
-            return editor ? editor.getValue() : '';
+    jQuery.fn.serializ = function(attr, cbk) {
+        return _serialize(this, attr || _serialize.DefaultAttr, cbk);
     };
 
-    if (typeof jQuery == 'undefined') {
-        throw Error('jQuery not found!');
-    } else {
-        jQuery.fn.serializ = function(attr) {
-            return _serialize(this, attr || _serialize.DefaultAttr);
-        };
-    }
+    function plugin(name, cbk) {
+        if (jQuery.isFunction(cbk)) {
+            _serialize[name] = cbk;
+        } else throw Error('second argument must be a function!');
+    };
+
+    jQuery.fn.serializ.extend = plugin;
+    plugin('codeMirror', function(ele) {
+        editor = $(ele).data('editor')
+        return editor ? editor.getValue() : '';
+    });
+
 }(this));

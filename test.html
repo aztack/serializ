@@ -18,7 +18,7 @@
             <!-- checkbox status is mapped to comma separated value -->
             <td><input x="gender:text" type="checkbox" data-map="M,F" checked="checked"></td>
             <td>
-                <select name="" id="select" s="country:val">
+                <select name="" id="select" s="country:val" data-filters="first3">
                     <option value="China" selected>China</option>
                     <option value="Japan">Japan</option>
                     <option value="Korea">Korea</option>
@@ -38,13 +38,27 @@
                 </select>
             </td>
         </tr>
+        <tr id="fmt">
+            <td s="data:text" data-format="value is '$&!'" data-ignore="^$|\s+">empty</td>
+            <td s="url:text" data-format="url($&)" data-ignore="empty">empty</td>
+            <td></td>
+            <td></td>
+        </tr>
     </table>
     <script>
+        jQuery.fn.serializ.extend('first3', function(v){
+            if (!v || v.length <=3) return v;
+            return v.substr(0, 3);
+        });
         console.log($('#select').serializ('s'));
         console.log($('#Matz').serializ('s'));
         console.log($('input:nth(0)').serializ('x'));
         console.log($('#array').serializ());
         console.log($('#array').serializ('gender'));
+        console.log($('#fmt').serializ('s', function(v, ele){
+            console.log(v);
+            return v + '!';
+        }))
     </script>
 </body>
 </html>
