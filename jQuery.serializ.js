@@ -33,7 +33,8 @@
      * @return {[type]}      object
      */
     function getValues(eles, attr, key) {
-        var c, checked, child, ele, f, field, fields, fmt, tmp, json, k, m, mapping, name, obj, sep, result, v, val, _, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+        var c, checked, child, ele, f, field, fields, fmt, substrArgs, tmp, json, k, m, mapping, name, 
+            obj, sep, result, v, val, _, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
         result = [];
         for (_i = 0, _len = eles.length; _i < _len; _i++) {
             ele = $(eles[_i]);
@@ -62,7 +63,7 @@
                         if (mapping) {
                             v = mapping.split(',')[+checked];
                         } else {
-                            v = checked ? v : '_';
+                            v = checked;
                         }
                     }
                 } else if (f[0] === '!') {
@@ -111,6 +112,14 @@
                 fmt = ele.data('format');
                 if (fmt) {
                     v = fmt.replace(/\$&/, v);
+                }
+
+                /**
+                 * substr
+                 */
+                substrArgs = ele.attr('data-substr');
+                if(substrArgs) {
+                    v = v.substr.apply(v, substrArgs.split(','));
                 }
 
                 /**
